@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLASFIT — PERSONAL TRAINING</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --black: #000; --white: #fff; --off: #f4f3f0; --gray: #888; --border: 1px solid #000; --font-display: 'Bebas Neue', sans-serif; --font-body: 'Barlow', sans-serif; }
+  html { font-size: 14px; }
+  body { font-family: var(--font-body); background: var(--white); color: var(--black); overflow-x: hidden; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 1.5rem; height: 52px; background: var(--white); border-bottom: var(--border); }
+  .nav-logo { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0.12em; cursor: pointer; }
+  .nav-center { display: flex; gap: 1.8rem; justify-content: center; }
+  .nav-center a { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; color: var(--black); cursor: pointer; }
+  .nav-center a:hover { text-decoration: underline; }
+  .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+  .nav-book { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; border: var(--border); padding: 0.4rem 1rem; cursor: pointer; background: var(--black); color: var(--white); text-decoration: none; }
+  .nav-dash { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; color: var(--gray); background: none; border: none; font-family: var(--font-body); }
+  .nav-dash:hover { color: var(--black); }
+
+  .page { display: none; padding-top: 52px; min-height: 100vh; }
+  .page.active { display: block; }
+
+  .home-grid { display: grid; grid-template-rows: 1fr 1fr; height: calc(100vh - 52px); }
+  .home-row { display: grid; grid-template-columns: 1fr 1fr; height: 100%; border-bottom: var(--border); }
+  .home-row:last-child { border-bottom: none; }
+  .home-cell { border-right: var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+  .home-cell:last-child { border-right: none; }
+  .home-cell:hover { background: var(--off); }
+  .home-cell-label { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; }
+
+  .page-header { border-bottom: var(--border); padding: 2.5rem 1.5rem 1.5rem; }
+  .page-header h1 { font-family: var(--font-display); font-size: 3.5rem; letter-spacing: 0.05em; line-height: 1; }
+  .page-header p { font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gray); margin-top: 0.5rem; text-transform: uppercase; }
+
+  /* QUESTIONNAIRE */
+  .q-wrapper { max-width: 680px; padding: 2rem 1.5rem 4rem; }
+  .q-step { display: none; }
+  .q-step.active { display: block; }
+  .q-num { font-size: 0.68rem; letter-spacing: 0.18em; color: var(--gray); text-transform: uppercase; margin-bottom: 1rem; }
+  .q-question { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.04em; margin-bottom: 1.5rem; line-height: 1.15; }
+  .q-options { display: grid; grid-template-columns: 1fr 1fr; }
+  .q-option { border: var(--border); margin: -0.5px; padding: 1.1rem 1.2rem; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; background: var(--white); }
+  .q-option:hover { background: var(--off); }
+  .q-option.selected { background: var(--black); color: var(--white); }
+  .q-input { width: 100%; border: none; border-bottom: var(--border); padding: 0.7rem 0; font-family: var(--font-body); font-size: 1rem; outline: none; background: transparent; letter-spacing: 0.04em; }
+  .q-input::placeholder { color: #bbb; }
+  .q-nav { display: flex; gap: 1rem; margin-top: 2rem; align-items: center; }
+  .q-btn { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; border: var(--border); padding: 0.75rem 2rem; cursor: pointer; background: var(--white); transition: background 0.15s; font-family: var(--font-body); }
+  .q-btn:hover { background: var(--off); }
+  .q-btn.primary { background: var(--black); color: var(--white); }
+  .q-btn.primary:hover { background: #222; }
+  .q-progress { flex: 1; height: 1px; background: #ddd; }
+  .q-progress-fill { height: 1px; background: var(--black); transition: width 0.3s; }
+  #result-section { display: none; }
+  .result-loading { padding: 2rem 1.5rem; }
+  .result-loading p { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+  .loading-bar { width: 100%; height: 1px; background: #eee; margin-top: 1rem; overflow: hidden; }
+  .loading-fill { height: 1px; background: var(--black); animation: loadbar 2.5s ease-in-out forwards; }
+  @keyframes loadbar { from { width: 0; } to { width: 100%; } }
+  .result-plan { padding: 0 1.5rem 4rem; max-width: 720px; }
+  .result-plan h2 { font-family: var(--font-display); font-size: 2.5rem; letter-spacing: 0.05em; margin: 2rem 0 0.5rem; }
+  .result-plan .tagline { font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 2rem; }
+  .plan-block { border-top: var(--border); padding: 1.5rem 0; }
+  .plan-block-title { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .plan-block-content { font-size: 0.92rem; line-height: 1.7; font-weight: 300; }
+  .plan-cta { margin-top: 2.5rem; display: inline-block; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; border: var(--border); padding: 1rem 2.5rem; cursor: pointer; background: var(--black); color: var(--white); text-decoration: none; }
+
+  /* FEES */
+  .fees-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .fee-card { border-right: var(--border); border-bottom: var(--border); padding: 2.5rem 2rem; transition: background 0.2s; }
+  .fee-card:hover { background: var(--off); }
+  .fee-card:nth-child(3n) { border-right: none; }
+  .fee-card-label { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gray); margin-bottom: 1.5rem; }
+  .fee-card-name { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 0.04em; line-height: 1; margin-bottom: 0.5rem; }
+  .fee-card-price { font-size: 2.2rem; font-weight: 300; letter-spacing: -0.01em; margin-bottom: 0.25rem; }
+  .fee-card-sub { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin-bottom: 1.5rem; }
+  .fee-card-desc { font-size: 0.82rem; line-height: 1.6; font-weight: 300; color: #444; }
+  .fee-card.featured { background: var(--black); color: var(--white); }
+  .fee-card.featured .fee-card-label, .fee-card.featured .fee-card-sub { color: #888; }
+  .fee-card.featured .fee-card-desc { color: #ccc; }
+  .fee-card.featured:hover { background: #111; }
+  .fee-note { border-top: var(--border); padding: 2rem 1.5rem; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--gray); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+  .fee-note a { color: var(--black); cursor: pointer; }
+
+  /* NUTRITION */
+  .nutrition-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 142px); }
+  .nutrition-left { border-right: var(--border); padding: 2rem 1.5rem; }
+  .nutrition-right { padding: 2rem 1.5rem; }
+  .n-section-title { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); margin-bottom: 1rem; border-bottom: var(--border); padding-bottom: 0.5rem; }
+  .n-profile-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .n-profile-cell { border: var(--border); margin: -0.5px; padding: 0.5rem 0.7rem; }
+  .n-profile-label { font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); }
+  .n-profile-input { width: 100%; border: none; outline: none; font-family: var(--font-body); font-size: 0.88rem; background: transparent; margin-top: 0.2rem; }
+  .meal-header-row { display: grid; grid-template-columns: 1fr 58px 58px 62px 50px; border-top: var(--border); border-bottom: var(--border); }
+  .mh { padding: 0.35rem 0.4rem; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); }
+  .meal-group-label { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; background: var(--off); padding: 0.35rem 0.5rem; border-bottom: 1px solid #eee; color: #555; }
+  .meal-row { display: grid; grid-template-columns: 1fr 58px 58px 62px 50px; border-bottom: 1px solid #eee; }
+  .mc { padding: 0.45rem 0.4rem; }
+  .mc input { width: 100%; border: none; outline: none; font-family: var(--font-body); font-size: 0.78rem; background: transparent; text-align: center; }
+  .mc input:first-child { text-align: left; }
+  .mc input::placeholder { color: #ccc; }
+  .macro-bar { display: flex; gap: 0; margin-top: 1.5rem; border: var(--border); }
+  .macro-pill { flex: 1; padding: 0.8rem 0.5rem; text-align: center; border-right: var(--border); }
+  .macro-pill:last-child { border-right: none; }
+  .macro-pill-val { font-size: 1.3rem; font-weight: 300; display: block; }
+  .macro-pill-label { font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); display: block; margin-top: 0.15rem; }
+  .macro-pill.hi { background: var(--black); color: var(--white); }
+  .macro-pill.hi .macro-pill-label { color: #999; }
+  .add-btn { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; border: var(--border); margin: -0.5px; padding: 0.55rem 0.8rem; cursor: pointer; background: var(--white); font-family: var(--font-body); }
+  .add-btn:hover { background: var(--off); }
+  .add-row { display: flex; margin-top: 1rem; }
+  .analyse-btn { width: 100%; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; border: var(--border); padding: 0.9rem; cursor: pointer; background: var(--black); color: var(--white); font-family: var(--font-body); margin-top: 1rem; }
+  .analyse-btn:hover { background: #222; }
+  .n-placeholder { color: #bbb; font-size: 0.85rem; font-weight: 300; line-height: 1.75; }
+  .n-loading { padding: 1rem 0; }
+  .n-loading p { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+  .analysis-block { border-top: var(--border); padding: 1rem 0; }
+  .analysis-title { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.5rem; }
+  .analysis-text { font-size: 0.85rem; line-height: 1.65; font-weight: 300; }
+  .analysis-name { font-family: var(--font-display); font-size: 1.6rem; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+  .analysis-sub { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 1rem; }
+
+  /* DASHBOARD */
+  .dash-login-wrap { max-width: 360px; margin: 4rem auto; padding: 0 1.5rem; }
+  .dash-login-wrap h2 { font-family: var(--font-display); font-size: 2.5rem; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+  .dash-login-wrap p { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 2rem; }
+  .dl-label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; display: block; margin-top: 1.2rem; margin-bottom: 0.3rem; }
+  .dl-input { width: 100%; border: none; border-bottom: var(--border); padding: 0.5rem 0; font-family: var(--font-body); font-size: 0.9rem; outline: none; background: transparent; }
+  .dl-btn { margin-top: 2rem; width: 100%; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; border: var(--border); padding: 0.9rem; cursor: pointer; background: var(--black); color: var(--white); font-family: var(--font-body); }
+  .login-err { font-size: 0.72rem; color: #c00; margin-top: 0.8rem; letter-spacing: 0.08em; display: none; }
+  #dash-portal { display: none; }
+  .dash-topbar { border-bottom: var(--border); padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; }
+  .dash-topbar h2 { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 0.05em; }
+  .dash-topbar span { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+  .dash-logout { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; color: var(--gray); background: none; border: none; font-family: var(--font-body); }
+  .dash-logout:hover { color: var(--black); }
+  .dash-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: var(--border); }
+  .dash-stat { border-right: var(--border); padding: 1.5rem; }
+  .dash-stat:last-child { border-right: none; }
+  .ds-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.4rem; }
+  .ds-val { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.04em; line-height: 1; }
+  .ds-sub { font-size: 0.72rem; color: var(--gray); margin-top: 0.2rem; font-weight: 300; }
+  .dash-body { display: grid; grid-template-columns: 2fr 1fr; }
+  .dash-panel { border-right: var(--border); padding: 1.5rem; }
+  .dash-panel:last-child { border-right: none; }
+  .dp-title { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); border-bottom: var(--border); padding-bottom: 0.6rem; margin-bottom: 1rem; }
+  .dash-day { border-bottom: 1px solid #eee; padding: 0.75rem 0; }
+  .dd-name { font-size: 0.64rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.25rem; color: var(--gray); }
+  .dd-content { font-size: 0.82rem; font-weight: 300; line-height: 1.5; color: #333; }
+  .dash-day.today { background: var(--off); margin: 0 -1.5rem; padding: 0.75rem 1.5rem; }
+  .dash-day.today .dd-name { color: var(--black); font-weight: 500; }
+  .client-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 0.65rem 0; font-size: 0.82rem; font-weight: 300; }
+  .client-row span { color: var(--gray); font-size: 0.72rem; }
+  .gen-input { width: 100%; border: none; border-bottom: var(--border); padding: 0.5rem 0; font-family: var(--font-body); font-size: 0.85rem; outline: none; background: transparent; margin-bottom: 0.6rem; }
+  .gen-input::placeholder { color: #bbb; }
+  .gen-btn { width: 100%; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; border: var(--border); padding: 0.7rem; cursor: pointer; background: var(--black); color: var(--white); font-family: var(--font-body); margin-top: 0.3rem; }
+  .gen-btn:hover { background: #222; }
+  .gen-output { display: none; margin-top: 1rem; border-top: var(--border); padding-top: 1rem; font-size: 0.82rem; line-height: 1.65; font-weight: 300; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); width: 480px; max-width: 95vw; padding: 2.5rem; position: relative; }
+  .modal-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.1rem; cursor: pointer; background: none; border: none; }
+  .modal h2 { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+  .modal-sub { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 2rem; }
+  .modal label { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; display: block; margin-bottom: 0.4rem; margin-top: 1.2rem; }
+  .modal input, .modal textarea { width: 100%; border: none; border-bottom: var(--border); padding: 0.5rem 0; font-family: var(--font-body); font-size: 0.9rem; outline: none; background: transparent; }
+  .modal textarea { height: 60px; resize: none; }
+  .modal-submit { margin-top: 2rem; width: 100%; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; border: var(--border); padding: 0.9rem; cursor: pointer; background: var(--black); color: var(--white); font-family: var(--font-body); }
+  .modal-success { display: none; text-align: center; padding: 2rem 0; }
+  .modal-success p { font-family: var(--font-display); font-size: 1.6rem; letter-spacing: 0.05em; }
+  .modal-success span { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); display: block; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">ATLASFIT</div>
+  <div class="nav-center">
+    <a onclick="showPage('plans')">Training Plans</a>
+    <a onclick="showPage('nutrition')">Nutrition</a>
+    <a onclick="showPage('fees')">Fees</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-dash" onclick="showPage('dashboard')">PT Login</button>
+    <a class="nav-book" onclick="openModal()">Book Consultation</a>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="home-grid">
+    <div class="home-row">
+      <div class="home-cell" onclick="showPage('plans')"><span class="home-cell-label">Training Plans</span></div>
+      <div class="home-cell" onclick="showPage('nutrition')"><span class="home-cell-label">Nutrition</span></div>
+    </div>
+    <div class="home-row">
+      <div class="home-cell" onclick="showPage('fees')"><span class="home-cell-label">Fees</span></div>
+      <div class="home-cell" onclick="openModal()"><span class="home-cell-label">Book Consultation</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAINING PLANS -->
+<div id="page-plans" class="page">
+  <div class="page-header">
+    <h1>Your Training Plan</h1>
+    <p>Answer a few questions — receive a personalised programme</p>
+  </div>
+  <div class="q-wrapper">
+    <div class="q-step active" id="step-1">
+      <div class="q-num">01 / 07</div><div class="q-question">What is your primary goal?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'goal','Build strength')">Build strength</div>
+        <div class="q-option" onclick="sel(this,'goal','Lose body fat')">Lose body fat</div>
+        <div class="q-option" onclick="sel(this,'goal','Improve fitness')">Improve fitness</div>
+        <div class="q-option" onclick="sel(this,'goal','Build muscle')">Build muscle</div>
+        <div class="q-option" onclick="sel(this,'goal','Improve mobility')">Improve mobility</div>
+        <div class="q-option" onclick="sel(this,'goal','General health')">General health</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:14%"></div></div><button class="q-btn primary" onclick="gs(2)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-2">
+      <div class="q-num">02 / 07</div><div class="q-question">What is your current training level?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'level','Complete beginner')">Complete beginner</div>
+        <div class="q-option" onclick="sel(this,'level','Some experience')">Some experience</div>
+        <div class="q-option" onclick="sel(this,'level','Intermediate')">Intermediate</div>
+        <div class="q-option" onclick="sel(this,'level','Advanced')">Advanced</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:28%"></div></div><button class="q-btn" onclick="gs(1)">Back</button><button class="q-btn primary" onclick="gs(3)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-3">
+      <div class="q-num">03 / 07</div><div class="q-question">How many days per week can you train?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'days','2 days')">2 days</div>
+        <div class="q-option" onclick="sel(this,'days','3 days')">3 days</div>
+        <div class="q-option" onclick="sel(this,'days','4 days')">4 days</div>
+        <div class="q-option" onclick="sel(this,'days','5+ days')">5+ days</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:42%"></div></div><button class="q-btn" onclick="gs(2)">Back</button><button class="q-btn primary" onclick="gs(4)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-4">
+      <div class="q-num">04 / 07</div><div class="q-question">How long is each session?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'duration','30 minutes')">30 minutes</div>
+        <div class="q-option" onclick="sel(this,'duration','45 minutes')">45 minutes</div>
+        <div class="q-option" onclick="sel(this,'duration','60 minutes')">60 minutes</div>
+        <div class="q-option" onclick="sel(this,'duration','75+ minutes')">75+ minutes</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:57%"></div></div><button class="q-btn" onclick="gs(3)">Back</button><button class="q-btn primary" onclick="gs(5)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-5">
+      <div class="q-num">05 / 07</div><div class="q-question">Any injuries or health conditions?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'injuries','None')">None</div>
+        <div class="q-option" onclick="sel(this,'injuries','Lower back')">Lower back</div>
+        <div class="q-option" onclick="sel(this,'injuries','Knee issue')">Knee issue</div>
+        <div class="q-option" onclick="sel(this,'injuries','Shoulder issue')">Shoulder issue</div>
+        <div class="q-option" onclick="sel(this,'injuries','Ankle / hip')">Ankle / hip</div>
+        <div class="q-option" onclick="sel(this,'injuries','Other / multiple')">Other / multiple</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:71%"></div></div><button class="q-btn" onclick="gs(4)">Back</button><button class="q-btn primary" onclick="gs(6)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-6">
+      <div class="q-num">06 / 07</div><div class="q-question">What equipment do you have access to?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="sel(this,'equipment','Full gym')">Full gym</div>
+        <div class="q-option" onclick="sel(this,'equipment','Home — basic kit')">Home — basic kit</div>
+        <div class="q-option" onclick="sel(this,'equipment','Bodyweight only')">Bodyweight only</div>
+        <div class="q-option" onclick="sel(this,'equipment','Dumbbells + bench')">Dumbbells + bench</div>
+      </div>
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:85%"></div></div><button class="q-btn" onclick="gs(5)">Back</button><button class="q-btn primary" onclick="gs(7)">Next</button></div>
+    </div>
+    <div class="q-step" id="step-7">
+      <div class="q-num">07 / 07</div><div class="q-question">Almost done. Your details.</div>
+      <input class="q-input" id="q-name" type="text" placeholder="Your name" style="margin-bottom:1rem;">
+      <input class="q-input" id="q-email" type="email" placeholder="Email address">
+      <div class="q-nav"><div class="q-progress"><div class="q-progress-fill" style="width:100%"></div></div><button class="q-btn" onclick="gs(6)">Back</button><button class="q-btn primary" onclick="generatePlan()">Generate my plan</button></div>
+    </div>
+    <div id="result-section">
+      <div class="result-loading" id="loading-msg"><p>Building your programme</p><div class="loading-bar"><div class="loading-fill"></div></div></div>
+      <div class="result-plan" id="plan-output" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NUTRITION -->
+<div id="page-nutrition" class="page">
+  <div class="page-header">
+    <h1>Nutrition Diary</h1>
+    <p>Log today's food — receive an AI-powered analysis from Atlasfit</p>
+  </div>
+  <div class="nutrition-layout">
+    <div class="nutrition-left">
+      <div class="n-section-title">Your profile</div>
+      <div class="n-profile-grid">
+        <div class="n-profile-cell"><div class="n-profile-label">Name</div><input class="n-profile-input" id="n-name" placeholder="Your name"></div>
+        <div class="n-profile-cell"><div class="n-profile-label">Age</div><input class="n-profile-input" id="n-age" type="number" placeholder="e.g. 30"></div>
+        <div class="n-profile-cell"><div class="n-profile-label">Weight (kg)</div><input class="n-profile-input" id="n-weight" type="number" placeholder="e.g. 70"></div>
+        <div class="n-profile-cell"><div class="n-profile-label">Goal</div><input class="n-profile-input" id="n-goal" placeholder="e.g. build muscle"></div>
+        <div class="n-profile-cell" style="grid-column:1/-1"><div class="n-profile-label">Diet / restrictions</div><input class="n-profile-input" id="n-diet" placeholder="e.g. plant-based, no dairy"></div>
+        <div class="n-profile-cell"><div class="n-profile-label">Training today</div><input class="n-profile-input" id="n-training" placeholder="e.g. 60min weights"></div>
+        <div class="n-profile-cell"><div class="n-profile-label">Water (litres)</div><input class="n-profile-input" id="n-water" type="number" step="0.1" placeholder="e.g. 1.5"></div>
+      </div>
+
+      <div class="n-section-title" style="margin-top:1.5rem;">Food log</div>
+      <div class="meal-header-row">
+        <div class="mh">Food / drink</div><div class="mh" style="text-align:center">kcal</div><div class="mh" style="text-align:center">carbs g</div><div class="mh" style="text-align:center">protein g</div><div class="mh" style="text-align:center">fat g</div>
+      </div>
+      <div id="food-log"></div>
+
+      <div class="add-row">
+        <button class="add-btn" onclick="addRow('Breakfast')">+ Breakfast</button>
+        <button class="add-btn" onclick="addRow('Lunch')">+ Lunch</button>
+        <button class="add-btn" onclick="addRow('Dinner')">+ Dinner</button>
+        <button class="add-btn" onclick="addRow('Snack')">+ Snack</button>
+      </div>
+
+      <div class="macro-bar">
+        <div class="macro-pill hi"><span class="macro-pill-val" id="t-kcal">0</span><span class="macro-pill-label">kcal</span></div>
+        <div class="macro-pill"><span class="macro-pill-val" id="t-carbs">0g</span><span class="macro-pill-label">carbs</span></div>
+        <div class="macro-pill"><span class="macro-pill-val" id="t-protein">0g</span><span class="macro-pill-label">protein</span></div>
+        <div class="macro-pill"><span class="macro-pill-val" id="t-fat">0g</span><span class="macro-pill-label">fat</span></div>
+      </div>
+      <button class="analyse-btn" onclick="analyseNutrition()">Analyse my diary</button>
+    </div>
+
+    <div class="nutrition-right">
+      <div class="n-section-title">Analysis</div>
+      <div id="n-placeholder" class="n-placeholder">Fill in your profile and food log on the left, then click <em>Analyse my diary</em> to receive a personalised nutrition review — covering energy balance, macro quality, hydration and goals-based recommendations.</div>
+      <div id="n-loading" style="display:none;" class="n-loading"><p>Analysing your diary</p><div class="loading-bar"><div class="loading-fill"></div></div></div>
+      <div id="n-output" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEES -->
+<div id="page-fees" class="page">
+  <div class="page-header">
+    <h1>Fees &amp; Packages</h1>
+    <p>Equinox East London — Premium 1-to-1 personal training</p>
+  </div>
+  <div class="fees-grid">
+    <div class="fee-card"><div class="fee-card-label">Single session</div><div class="fee-card-name">Pay As You Go</div><div class="fee-card-price">£65</div><div class="fee-card-sub">Per session</div><div class="fee-card-desc">A single 60-minute personal training session at Equinox East London. Full programme, coaching and follow-up notes included.</div></div>
+    <div class="fee-card featured"><div class="fee-card-label">Most popular</div><div class="fee-card-name">Premium Package</div><div class="fee-card-price">£500</div><div class="fee-card-sub">8 sessions — £62.50 each</div><div class="fee-card-desc">Block booking for committed clients. Bespoke programme, progress tracking dashboard and monthly review session. Best value for consistent results.</div></div>
+    <div class="fee-card"><div class="fee-card-label">Free — no commitment</div><div class="fee-card-name">Health Check</div><div class="fee-card-price">£0</div><div class="fee-card-sub">20-minute consultation</div><div class="fee-card-desc">A complimentary health and movement assessment. We discuss your goals, history and current routine before any financial commitment is made.</div></div>
+    <div class="fee-card" style="border-right:none; grid-column:1/-1; border-bottom:none;"><div class="fee-card-label">Specialism</div><div class="fee-card-name">Older Adult Training</div><div class="fee-card-price">£65</div><div class="fee-card-sub">Per session — same rate, specialist approach</div><div class="fee-card-desc">Dedicated programming for adults 50+. Strength preservation, mobility, balance and long-term health. GP referral clients welcome from September 2026.</div></div>
+  </div>
+  <div class="fee-note">
+    <span>All sessions at Equinox East London &nbsp;·&nbsp; Block bookings recommended for best results</span>
+    <a onclick="openModal()">Book a free health check →</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page">
+  <div id="dash-login-screen">
+    <div class="dash-login-wrap">
+      <h2>PT Portal</h2>
+      <p>Atlasfit — trainer access only</p>
+      <label class="dl-label">Username</label>
+      <input class="dl-input" id="dash-user" placeholder="atlasfit">
+      <label class="dl-label">Password</label>
+      <input class="dl-input" id="dash-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')dashLogin()">
+      <button class="dl-btn" onclick="dashLogin()">Enter</button>
+      <div class="login-err" id="login-err">Incorrect credentials.</div>
+    </div>
+  </div>
+
+  <div id="dash-portal">
+    <div class="dash-topbar">
+      <div><h2 id="dash-greeting">Good morning, Ali</h2><span id="dash-date"></span></div>
+      <button class="dash-logout" onclick="dashLogout()">Log out</button>
+    </div>
+    <div class="dash-stats">
+      <div class="dash-stat"><div class="ds-label">Active clients</div><div class="ds-val">3</div><div class="ds-sub">Josie · Marcus · Priya</div></div>
+      <div class="dash-stat"><div class="ds-label">Sessions this week</div><div class="ds-val">5</div><div class="ds-sub">2 remaining today</div></div>
+      <div class="dash-stat"><div class="ds-label">Revenue this month</div><div class="ds-val">£975</div><div class="ds-sub">15 sessions · on track</div></div>
+    </div>
+    <div class="dash-body">
+      <div class="dash-panel">
+        <div class="dp-title">This week</div>
+        <div class="dash-day" id="dash-mon"><div class="dd-name">Monday</div><div class="dd-content">Josie Winfield — 9:00am · Back squat / push-up progression<br>Marcus Lee — 6:00pm · Full body hypertrophy</div></div>
+        <div class="dash-day" id="dash-tue"><div class="dd-name">Tuesday</div><div class="dd-content">Priya Sharma — 7:30am · HIIT circuit + mobility<br>Programming / admin</div></div>
+        <div class="dash-day" id="dash-wed"><div class="dd-name">Wednesday</div><div class="dd-content">Josie Winfield — 9:00am · Fartlek + PNF stretch<br>Marcus Lee — 5:30pm · Upper body pull</div></div>
+        <div class="dash-day" id="dash-thu"><div class="dd-name">Thursday</div><div class="dd-content">CPD study — older adult exercise module<br>Client check-ins</div></div>
+        <div class="dash-day" id="dash-fri"><div class="dd-name">Friday</div><div class="dd-content">Priya Sharma — 8:00am · Lower body strength<br>Free consultations × 2</div></div>
+        <div class="dash-day" id="dash-sat"><div class="dd-name">Saturday</div><div class="dd-content">Walk-in health checks at Equinox · 10am–1pm</div></div>
+        <div class="dash-day" id="dash-sun"><div class="dd-name">Sunday</div><div class="dd-content">Rest</div></div>
+      </div>
+      <div class="dash-panel">
+        <div class="dp-title">Clients</div>
+        <div class="client-row">Josie Winfield <span>Week 3 · Strength</span></div>
+        <div class="client-row">Marcus Lee <span>Week 6 · Hypertrophy</span></div>
+        <div class="client-row">Priya Sharma <span>Week 1 · Conditioning</span></div>
+
+        <div class="dp-title" style="margin-top:1.5rem;">Generate session plan</div>
+        <input class="gen-input" id="gen-client" placeholder="Client name">
+        <input class="gen-input" id="gen-focus" placeholder="Session focus (e.g. lower body strength)">
+        <button class="gen-btn" onclick="generateSession()">Generate plan</button>
+        <div id="gen-loading" style="display:none;" class="n-loading"><p>Writing session plan</p><div class="loading-bar"><div class="loading-fill"></div></div></div>
+        <div class="gen-output" id="gen-output"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-form-content">
+      <h2>Book Your Free Health Check</h2>
+      <div class="modal-sub">20 minutes · No commitment · Equinox East London</div>
+      <label>Full name</label><input type="text" id="m-name" placeholder="Your name">
+      <label>Email address</label><input type="email" id="m-email" placeholder="your@email.com">
+      <label>Phone number</label><input type="tel" id="m-phone" placeholder="+44...">
+      <label>What are you hoping to achieve?</label>
+      <textarea id="m-goal" placeholder="A sentence or two about your goals..."></textarea>
+      <button class="modal-submit" onclick="submitBooking()">Request Consultation</button>
+    </div>
+    <div class="modal-success" id="modal-success">
+      <p>Request Received</p>
+      <span>Atlasfit will be in touch within 24 hours to confirm your free health check.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const A = {};
+let cStep = 1;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'dashboard') hlToday();
+}
+function sel(el, k, v) { el.parentElement.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); A[k] = v; }
+function gs(n) { document.getElementById('step-' + cStep).classList.remove('active'); cStep = n; document.getElementById('step-' + n).classList.add('active'); window.scrollTo(0,0); }
+
+async function api(prompt, tokens) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: tokens || 1000, messages: [{role:'user', content: prompt}] })
+  });
+  return r.json();
+}
+
+function parseSections(text) {
+  return text.split('\n\n').filter(s => s.trim()).map(s => {
+    const lines = s.trim().split('\n');
+    const isH = lines[0] === lines[0].toUpperCase() && lines[0].length > 3 && !/[0-9:]/.test(lines[0]);
+    return isH ? `<div class="plan-block"><div class="plan-block-title">${lines[0]}</div><div class="plan-block-content">${lines.slice(1).join('<br>')}</div></div>`
+               : `<div class="plan-block"><div class="plan-block-content">${s.replace(/\n/g,'<br>')}</div></div>`;
+  }).join('');
+}
+
+async function generatePlan() {
+  A.name = document.getElementById('q-name').value || 'Client';
+  A.email = document.getElementById('q-email').value;
+  document.getElementById('step-7').classList.remove('active');
+  document.getElementById('result-section').style.display = 'block';
+  const lm = document.getElementById('loading-msg');
+  lm.style.display = 'block'; lm.innerHTML = '<p>Building your programme</p><div class="loading-bar"><div class="loading-fill"></div></div>';
+  document.getElementById('plan-output').style.display = 'none';
+  const prompt = `You are Atlasfit, a personal trainer at Equinox East London with 10 years of CrossFit experience and a fashion design background. Precise, evidence-based, aesthetics-led.
+Client:
+- Name: ${A.name} | Goal: ${A.goal||'Not specified'} | Level: ${A.level||'Not specified'} | Days/week: ${A.days||'Not specified'} | Session length: ${A.duration||'Not specified'} | Injuries: ${A.injuries||'None'} | Equipment: ${A.equipment||'Full gym'}
+Write a personalised training plan with CAPITALISED section headers: PROGRAMME OVERVIEW / WEEKLY STRUCTURE / TECHNIQUE FOCUS / PROGRESSION MODEL / NUTRITION NOTES / A NOTE FROM ATLASFIT. Expert, confident tone. No markdown.`;
+  try {
+    const data = await api(prompt);
+    const text = data.content.map(b=>b.text||'').join('');
+    lm.style.display = 'none';
+    const out = document.getElementById('plan-output');
+    out.style.display = 'block';
+    out.innerHTML = `<h2>${A.name}'s Programme</h2><div class="tagline">Generated by Atlasfit — Equinox East London</div>${parseSections(text)}<a class="plan-cta" onclick="openModal()">Book your free health check →</a>`;
+  } catch(e) { lm.innerHTML = '<p style="color:#c00">Something went wrong. Please try again.</p>'; }
+}
+
+function addRow(meal) {
+  const log = document.getElementById('food-log');
+  const g = document.createElement('div'); g.className = 'meal-group-label'; g.textContent = meal; log.appendChild(g);
+  const r = document.createElement('div'); r.className = 'meal-row';
+  r.innerHTML = `<div class="mc"><input placeholder="e.g. 35g oats with oat milk" oninput="calcTotals()"></div><div class="mc"><input type="number" placeholder="0" oninput="calcTotals()"></div><div class="mc"><input type="number" placeholder="0" oninput="calcTotals()"></div><div class="mc"><input type="number" placeholder="0" oninput="calcTotals()"></div><div class="mc"><input type="number" placeholder="0" oninput="calcTotals()"></div>`;
+  log.appendChild(r);
+}
+
+function calcTotals() {
+  let k=0,c=0,p=0,f=0;
+  document.querySelectorAll('#food-log .meal-row').forEach(r=>{
+    const inp = r.querySelectorAll('input[type=number]');
+    k+=parseFloat(inp[0].value)||0; c+=parseFloat(inp[1].value)||0; p+=parseFloat(inp[2].value)||0; f+=parseFloat(inp[3].value)||0;
+  });
+  document.getElementById('t-kcal').textContent = Math.round(k);
+  document.getElementById('t-carbs').textContent = Math.round(c)+'g';
+  document.getElementById('t-protein').textContent = Math.round(p)+'g';
+  document.getElementById('t-fat').textContent = Math.round(f)+'g';
+}
+
+function getDiary() {
+  let t = '';
+  document.querySelectorAll('#food-log > div').forEach(el => {
+    if (el.classList.contains('meal-group-label')) { t += '\n'+el.textContent+':\n'; }
+    else {
+      const inp = el.querySelectorAll('input');
+      if(inp[0].value) t += `  ${inp[0].value} — ${inp[1].value||0}kcal, ${inp[2].value||0}g carbs, ${inp[3].value||0}g protein, ${inp[4].value||0}g fat\n`;
+    }
+  });
+  return t || 'No entries logged.';
+}
+
+async function analyseNutrition() {
+  const name = document.getElementById('n-name').value||'Client';
+  document.getElementById('n-placeholder').style.display='none';
+  document.getElementById('n-output').style.display='none';
+  const nl = document.getElementById('n-loading'); nl.style.display='block'; nl.innerHTML='<p>Analysing your diary</p><div class="loading-bar"><div class="loading-fill"></div></div>';
+  const prompt = `You are Atlasfit, a personal trainer and nutrition coach at Equinox East London.
+Client: Name: ${name} | Age: ${document.getElementById('n-age').value||'?'} | Weight: ${document.getElementById('n-weight').value||'?'}kg | Goal: ${document.getElementById('n-goal').value||'general health'} | Diet: ${document.getElementById('n-diet').value||'no restrictions'} | Training today: ${document.getElementById('n-training').value||'none'} | Water: ${document.getElementById('n-water').value||'?'}L
+Daily totals: ${document.getElementById('t-kcal').textContent} kcal | ${document.getElementById('t-carbs').textContent} carbs | ${document.getElementById('t-protein').textContent} protein | ${document.getElementById('t-fat').textContent} fat
+Food diary:${getDiary()}
+Analyse this diary with CAPITALISED section headers: INITIAL IMPRESSION / ENERGY BALANCE / MACRONUTRIENT QUALITY / HYDRATION / KEY RECOMMENDATIONS / GOALS-BASED NOTES. Be specific with numbers. Professional, direct, warm tone. No markdown.`;
+  try {
+    const data = await api(prompt, 1200);
+    const text = data.content.map(b=>b.text||'').join('');
+    nl.style.display='none';
+    const out = document.getElementById('n-output'); out.style.display='block';
+    const blocks = text.split('\n\n').filter(s=>s.trim()).map(s=>{
+      const lines=s.trim().split('\n');
+      const isH = lines[0]===lines[0].toUpperCase()&&lines[0].length>3&&!/[0-9:]/.test(lines[0]);
+      return isH ? `<div class="analysis-block"><div class="analysis-title">${lines[0]}</div><div class="analysis-text">${lines.slice(1).join('<br>')}</div></div>`
+                 : `<div class="analysis-block"><div class="analysis-text">${s.replace(/\n/g,'<br>')}</div></div>`;
+    }).join('');
+    out.innerHTML = `<div class="analysis-name">${name}'s Nutrition Review</div><div class="analysis-sub">Analysed by Atlasfit</div>${blocks}`;
+  } catch(e) { nl.innerHTML='<p style="color:#c00">Something went wrong. Please try again.</p>'; }
+}
+
+function dashLogin() {
+  if(document.getElementById('dash-user').value==='atlasfit' && document.getElementById('dash-pass').value==='equinox2026'){
+    document.getElementById('dash-login-screen').style.display='none';
+    document.getElementById('dash-portal').style.display='block';
+    const now = new Date();
+    const h = now.getHours();
+    const greet = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+    document.getElementById('dash-greeting').textContent = greet+', Ali';
+    document.getElementById('dash-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    hlToday();
+  } else { document.getElementById('login-err').style.display='block'; }
+}
+function dashLogout() { document.getElementById('dash-login-screen').style.display='block'; document.getElementById('dash-portal').style.display='none'; document.getElementById('dash-user').value=''; document.getElementById('dash-pass').value=''; }
+function hlToday() { const d=['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]; document.querySelectorAll('.dash-day').forEach(e=>e.classList.remove('today')); const el=document.getElementById('dash-'+d); if(el)el.classList.add('today'); }
+
+async function generateSession() {
+  const client = document.getElementById('gen-client').value||'client';
+  const focus = document.getElementById('gen-focus').value||'full body';
+  const gl = document.getElementById('gen-loading'); gl.style.display='block'; gl.innerHTML='<p>Writing session plan</p><div class="loading-bar"><div class="loading-fill"></div></div>';
+  document.getElementById('gen-output').style.display='none';
+  const prompt = `You are Atlasfit, a personal trainer at Equinox East London. Write a complete, coach-ready 60-minute session plan for ${client}, focus: ${focus}. Include warm-up, main lifts with sets/reps/%1RM or RPE, technique cues, and cool-down. Plain text, clear sections.`;
+  try {
+    const data = await api(prompt, 800);
+    const text = data.content.map(b=>b.text||'').join('');
+    gl.style.display='none';
+    const out = document.getElementById('gen-output'); out.style.display='block';
+    out.innerHTML = `<strong>${client} — ${focus}</strong><br><br>${text.replace(/\n/g,'<br>')}`;
+  } catch(e) { gl.style.display='none'; document.getElementById('gen-output').style.display='block'; document.getElementById('gen-output').textContent='Error — please try again.'; }
+}
+
+function openModal() { document.getElementById('modal').classList.add('open'); document.getElementById('modal-form-content').style.display='block'; document.getElementById('modal-success').style.display='none'; }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target===document.getElementById('modal'))closeModal(); }
+function submitBooking() { if(!document.getElementById('m-name').value||!document.getElementById('m-email').value){alert('Please enter your name and email.');return;} document.getElementById('modal-form-content').style.display='none'; document.getElementById('modal-success').style.display='block'; }
+</script>
+</body>
+</html>
