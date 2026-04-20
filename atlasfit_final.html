@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLASFIT — PERSONAL TRAINING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#000;--white:#fff;--off:#f4f3f0;--gray:#888;--green:#4CAF50;--border:1px solid #000;--fd:'Bebas Neue',sans-serif;--fb:'Barlow',sans-serif}
+html{font-size:14px}
+body{font-family:var(--fb);background:var(--white);color:var(--black);overflow-x:hidden}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 1.5rem;height:52px;background:var(--white);border-bottom:var(--border)}
+.nl{font-family:var(--fd);font-size:1.1rem;letter-spacing:.12em;cursor:pointer}
+.nc{display:flex;gap:1.8rem;justify-content:center}
+.nc a{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--black);cursor:pointer}
+.nc a:hover{text-decoration:underline}
+.nr{display:flex;justify-content:flex-end;align-items:center;gap:1rem}
+.nb{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;border:var(--border);padding:.35rem .85rem;cursor:pointer;background:var(--black);color:var(--white);text-decoration:none}
+.ndash{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;color:var(--gray);background:none;border:none;font-family:var(--fb)}
+.ndash:hover{color:var(--black)}
+
+.page{display:none;padding-top:52px;min-height:100vh}
+.page.active{display:block}
+
+/* HOME */
+.hgrid{display:grid;grid-template-rows:1fr 1fr;height:calc(100vh - 52px)}
+.hrow{display:grid;grid-template-columns:1fr 1fr;height:100%;border-bottom:var(--border)}
+.hrow:last-child{border-bottom:none}
+.hcell{border-right:var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.hcell:last-child{border-right:none}
+.hcell:hover{background:var(--off)}
+.hlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
+
+/* PAGE HEADER */
+.ph{border-bottom:var(--border);padding:1.2rem 1.5rem}
+.ph h1{font-family:var(--fd);font-size:1.6rem;letter-spacing:.1em;line-height:1}
+.ph p{font-size:.72rem;letter-spacing:.1em;color:var(--gray);margin-top:.3rem;text-transform:uppercase}
+
+/* PLANS */
+.playout{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 102px)}
+.pleft{border-right:var(--border);overflow-y:auto}
+.pright{position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.pst{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);padding:.8rem 1.5rem .5rem;border-top:var(--border)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr}
+.popt{border:none;border-right:var(--border);border-bottom:1px solid #eee;padding:.9rem 1.5rem;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .12s;background:var(--white);font-family:var(--fb)}
+.popt:nth-child(even){border-right:none}
+.popt:hover{background:var(--off)}
+.psel{background:var(--green)!important;color:var(--white)}
+.pinput{width:100%;border:none;border-bottom:var(--border);padding:.6rem 0;font-family:var(--fb);font-size:.9rem;outline:none;background:transparent;display:block}
+.pinput::placeholder{color:#bbb}
+.pgenbtn{margin-top:1.5rem;width:100%;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--green);padding:1rem;cursor:pointer;background:var(--green);color:var(--white);font-family:var(--fb)}
+.pgenbtn:hover{background:#3d9140}
+.pplaceholder{padding:3rem 1.5rem;color:#bbb;font-size:.85rem;font-weight:300;line-height:1.75}
+
+/* PLAN OUTPUT TABLE */
+.pnrow{padding:2rem 1.5rem 1.5rem;border-bottom:var(--border)}
+.pnrow h2{font-family:var(--fd);font-size:2.5rem;letter-spacing:.05em;line-height:1}
+.pnrow .ptag{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-top:.3rem}
+.pmeta{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:var(--border)}
+.pmc{padding:1rem 1.5rem;border-right:var(--border)}
+.pmc:last-child{border-right:none}
+.pmcl{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);margin-bottom:.3rem}
+.pmcv{font-family:var(--fd);font-size:1.2rem;letter-spacing:.04em}
+.psectitle{font-family:var(--fd);font-size:1.1rem;letter-spacing:.1em;background:var(--green);color:var(--white);padding:.6rem 1.5rem}
+.pcolheads{display:grid;grid-template-columns:2fr 55px 75px 75px 2fr;border-bottom:var(--border);background:var(--off)}
+.pch{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);padding:.45rem 1.5rem}
+.pch:not(:first-child){border-left:var(--border);text-align:center}
+.prow{display:grid;grid-template-columns:2fr 55px 75px 75px 2fr;border-bottom:1px solid #eee}
+.prow:hover{background:var(--off)}
+.pc{padding:.8rem 1.5rem;font-size:.82rem;font-weight:400;line-height:1.35}
+.pc:not(:first-child){border-left:1px solid #eee;text-align:center;font-size:.75rem;color:#444}
+.pcnote{text-align:left!important;font-size:.75rem!important;color:var(--gray)!important;font-weight:300!important}
+.pnote{padding:1.2rem 1.5rem;border-top:var(--border);font-size:.85rem;font-weight:300;line-height:1.65;color:#333}
+.pnote strong{font-weight:500;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--black);display:block;margin-bottom:.3rem}
+.pcta{margin:2rem 1.5rem;display:inline-block;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--green);padding:1rem 2.5rem;cursor:pointer;background:var(--green);color:var(--white);text-decoration:none}
+.lbar{width:100%;height:1px;background:#eee;margin-top:1rem;overflow:hidden}
+.lfill{height:1px;background:var(--black);animation:lb 1.8s ease-in-out forwards}
+@keyframes lb{from{width:0}to{width:100%}}
+.lmsg{padding:2rem 1.5rem}
+.lmsg p{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray)}
+
+/* FEES */
+.fgrid{display:grid;grid-template-columns:1fr 1fr 1fr}
+.fcard{border-right:var(--border);border-bottom:var(--border);padding:2.5rem 2rem;transition:background .2s}
+.fcard:hover{background:var(--off)}
+.fcard:nth-child(3n){border-right:none}
+.fcl{font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gray);margin-bottom:1.5rem}
+.fcn{font-family:var(--fd);font-size:1.8rem;letter-spacing:.04em;line-height:1;margin-bottom:.5rem}
+.fcp{font-size:2.2rem;font-weight:300;letter-spacing:-.01em;margin-bottom:.25rem}
+.fcs{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:1.5rem}
+.fcd{font-size:.82rem;line-height:1.6;font-weight:300;color:#444}
+.fcard.feat{background:var(--black);color:var(--white)}
+.fcard.feat .fcl,.fcard.feat .fcs{color:#888}
+.fcard.feat .fcd{color:#ccc}
+.fcard.feat:hover{background:#111}
+.fnote{border-top:var(--border);padding:2rem 1.5rem;font-size:.75rem;letter-spacing:.1em;color:var(--gray);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.fnote a{color:var(--black);cursor:pointer}
+
+/* NUTRITION */
+.nlayout{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 102px)}
+.nleft{border-right:var(--border);padding:2rem 1.5rem}
+.nright{padding:2rem 1.5rem}
+.nst{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);margin-bottom:1rem;border-bottom:var(--border);padding-bottom:.5rem}
+.npgrid{display:grid;grid-template-columns:1fr 1fr}
+.npc{border:var(--border);margin:-.5px;padding:.5rem .7rem}
+.npl{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gray)}
+.npi{width:100%;border:none;outline:none;font-family:var(--fb);font-size:.88rem;background:transparent;margin-top:.2rem}
+.mhrow{display:grid;grid-template-columns:1fr 58px 58px 62px 50px;border-top:var(--border);border-bottom:var(--border)}
+.mh{padding:.35rem .4rem;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gray)}
+.mgl{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;background:var(--off);padding:.35rem .5rem;border-bottom:1px solid #eee;color:#555}
+.mrow{display:grid;grid-template-columns:1fr 58px 58px 62px 50px;border-bottom:1px solid #eee}
+.mc2{padding:.45rem .4rem}
+.mc2 input{width:100%;border:none;outline:none;font-family:var(--fb);font-size:.78rem;background:transparent;text-align:center}
+.mc2:first-child input{text-align:left}
+.mc2 input::placeholder{color:#ccc}
+.mbar{display:flex;gap:0;margin-top:1.5rem;border:var(--border)}
+.mp{flex:1;padding:.8rem .5rem;text-align:center;border-right:var(--border)}
+.mp:last-child{border-right:none}
+.mpv{font-size:1.3rem;font-weight:300;display:block}
+.mpl{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gray);display:block;margin-top:.15rem}
+.mp.hi{background:var(--black);color:var(--white)}
+.mp.hi .mpl{color:#999}
+.addbtn{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;border:var(--border);margin:-.5px;padding:.55rem .8rem;cursor:pointer;background:var(--white);font-family:var(--fb)}
+.addbtn:hover{background:var(--off)}
+.addrow{display:flex;margin-top:1rem}
+.abtn{width:100%;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border:var(--border);padding:.9rem;cursor:pointer;background:var(--black);color:var(--white);font-family:var(--fb);margin-top:1rem}
+.abtn:hover{background:#222}
+.nph{color:#bbb;font-size:.85rem;font-weight:300;line-height:1.75}
+.ablock{border-top:var(--border);padding:1rem 0}
+.atitle{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);margin-bottom:.5rem}
+.atext{font-size:.85rem;line-height:1.65;font-weight:300}
+.aname{font-family:var(--fd);font-size:1.6rem;letter-spacing:.04em;margin-bottom:.2rem}
+.asub{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:1rem}
+
+/* DASHBOARD */
+.dlwrap{max-width:360px;margin:4rem auto;padding:0 1.5rem}
+.dlwrap h2{font-family:var(--fd);font-size:2.5rem;letter-spacing:.05em;margin-bottom:.3rem}
+.dlwrap p{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:2rem}
+.dll{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;display:block;margin-top:1.2rem;margin-bottom:.3rem}
+.dli{width:100%;border:none;border-bottom:var(--border);padding:.5rem 0;font-family:var(--fb);font-size:.9rem;outline:none;background:transparent}
+.dlbtn{margin-top:2rem;width:100%;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border:var(--border);padding:.9rem;cursor:pointer;background:var(--black);color:var(--white);font-family:var(--fb)}
+.lerr{font-size:.72rem;color:#c00;margin-top:.8rem;letter-spacing:.08em;display:none}
+.dtop{border-bottom:var(--border);padding:1.5rem;display:flex;justify-content:space-between;align-items:flex-end}
+.dtop h2{font-family:var(--fd);font-size:2.2rem;letter-spacing:.05em}
+.dtop span{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray)}
+.dlout{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;color:var(--gray);background:none;border:none;font-family:var(--fb)}
+.dlout:hover{color:var(--black)}
+.dstats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:var(--border)}
+.dstat{border-right:var(--border);padding:1.5rem}
+.dstat:last-child{border-right:none}
+.dsl{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);margin-bottom:.4rem}
+.dsv{font-family:var(--fd);font-size:2rem;letter-spacing:.04em;line-height:1}
+.dss{font-size:.72rem;color:var(--gray);margin-top:.2rem;font-weight:300}
+.dbody{display:grid;grid-template-columns:2fr 1fr}
+.dpanel{border-right:var(--border);padding:1.5rem}
+.dpanel:last-child{border-right:none}
+.dpt{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);border-bottom:var(--border);padding-bottom:.6rem;margin-bottom:1rem}
+.dday{border-bottom:1px solid #eee;padding:.75rem 0}
+.ddn{font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.25rem;color:var(--gray)}
+.ddc{font-size:.82rem;font-weight:300;line-height:1.5;color:#333}
+.dday.today{background:var(--off);margin:0 -1.5rem;padding:.75rem 1.5rem}
+.dday.today .ddn{color:var(--black);font-weight:500}
+.crow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:.65rem 0;font-size:.82rem;font-weight:300}
+.crow span{color:var(--gray);font-size:.72rem}
+.ginput{width:100%;border:none;border-bottom:var(--border);padding:.5rem 0;font-family:var(--fb);font-size:.85rem;outline:none;background:transparent;margin-bottom:.6rem}
+.ginput::placeholder{color:#bbb}
+.gbtn{width:100%;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;border:var(--border);padding:.7rem;cursor:pointer;background:var(--black);color:var(--white);font-family:var(--fb);margin-top:.3rem}
+.gbtn:hover{background:#222}
+.gout{display:none;margin-top:1rem;border-top:var(--border);padding-top:1rem;font-size:.82rem;line-height:1.65;font-weight:300}
+
+/* MODAL */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
+.moverlay.open{display:flex}
+.modal{background:var(--white);width:480px;max-width:95vw;padding:2.5rem;position:relative}
+.mclose{position:absolute;top:1rem;right:1.2rem;font-size:1.1rem;cursor:pointer;background:none;border:none}
+.modal h2{font-family:var(--fd);font-size:2rem;letter-spacing:.05em;margin-bottom:.3rem}
+.msub{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:2rem}
+.modal label{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:.4rem;margin-top:1.2rem}
+.modal input,.modal textarea{width:100%;border:none;border-bottom:var(--border);padding:.5rem 0;font-family:var(--fb);font-size:.9rem;outline:none;background:transparent}
+.modal textarea{height:60px;resize:none}
+.msubmit{margin-top:2rem;width:100%;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border:var(--border);padding:.9rem;cursor:pointer;background:var(--black);color:var(--white);font-family:var(--fb)}
+.msuccess{display:none;text-align:center;padding:2rem 0}
+.msuccess p{font-family:var(--fd);font-size:1.6rem;letter-spacing:.05em}
+.msuccess span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);display:block;margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nl" onclick="sp('home')">ATLASFIT</div>
+  <div class="nc">
+    <a onclick="sp('plans')">Training Plans</a>
+    <a onclick="sp('nutrition')">Nutrition</a>
+    <a onclick="sp('fees')">Fees</a>
+  </div>
+  <div class="nr">
+    <button class="ndash" onclick="sp('dashboard')">PT Login</button>
+    <a class="nb" onclick="om()">Book Consultation</a>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hgrid">
+    <div class="hrow">
+      <div class="hcell" onclick="sp('plans')"><span class="hlabel">Training Plans</span></div>
+      <div class="hcell" onclick="sp('nutrition')"><span class="hlabel">Nutrition</span></div>
+    </div>
+    <div class="hrow">
+      <div class="hcell" onclick="sp('fees')"><span class="hlabel">Fees</span></div>
+      <div class="hcell" onclick="om()"><span class="hlabel">Book Consultation</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAINING PLANS -->
+<div id="page-plans" class="page">
+  <div class="ph">
+    <h1>Training Plans</h1>
+    <p>Select your details — get your programme instantly</p>
+  </div>
+  <div class="playout">
+    <div class="pleft">
+      <div class="pst">Your goal</div>
+      <div class="pgrid">
+        <div class="popt" onclick="ps(this,'goal','Build strength')">Build strength</div>
+        <div class="popt" onclick="ps(this,'goal','Lose body fat')">Lose body fat</div>
+        <div class="popt" onclick="ps(this,'goal','Build muscle')">Build muscle</div>
+        <div class="popt" onclick="ps(this,'goal','Improve fitness')">Improve fitness</div>
+        <div class="popt" onclick="ps(this,'goal','Improve mobility')">Improve mobility</div>
+        <div class="popt" onclick="ps(this,'goal','General health')">General health</div>
+      </div>
+      <div class="pst">Training level</div>
+      <div class="pgrid">
+        <div class="popt" onclick="ps(this,'level','Beginner')">Beginner</div>
+        <div class="popt" onclick="ps(this,'level','Some experience')">Some experience</div>
+        <div class="popt" onclick="ps(this,'level','Intermediate')">Intermediate</div>
+        <div class="popt" onclick="ps(this,'level','Advanced')">Advanced</div>
+      </div>
+      <div class="pst">Days per week</div>
+      <div class="pgrid">
+        <div class="popt" onclick="ps(this,'days','2 days')">2 days</div>
+        <div class="popt" onclick="ps(this,'days','3 days')">3 days</div>
+        <div class="popt" onclick="ps(this,'days','4 days')">4 days</div>
+        <div class="popt" onclick="ps(this,'days','5+ days')">5+ days</div>
+      </div>
+      <div class="pst">Session length</div>
+      <div class="pgrid">
+        <div class="popt" onclick="ps(this,'duration','30 min')">30 min</div>
+        <div class="popt" onclick="ps(this,'duration','45 min')">45 min</div>
+        <div class="popt" onclick="ps(this,'duration','60 min')">60 min</div>
+        <div class="popt" onclick="ps(this,'duration','75+ min')">75+ min</div>
+      </div>
+      <div class="pst">Injuries / conditions</div>
+      <div class="pgrid">
+        <div class="popt psel" onclick="ps(this,'injuries','None')">None</div>
+        <div class="popt" onclick="ps(this,'injuries','Lower back')">Lower back</div>
+        <div class="popt" onclick="ps(this,'injuries','Knee')">Knee</div>
+        <div class="popt" onclick="ps(this,'injuries','Shoulder')">Shoulder</div>
+        <div class="popt" onclick="ps(this,'injuries','Ankle / hip')">Ankle / hip</div>
+        <div class="popt" onclick="ps(this,'injuries','Multiple')">Multiple</div>
+      </div>
+      <div class="pst">Equipment</div>
+      <div class="pgrid">
+        <div class="popt psel" onclick="ps(this,'equipment','Full gym')">Full gym</div>
+        <div class="popt" onclick="ps(this,'equipment','Home basic kit')">Home basic kit</div>
+        <div class="popt" onclick="ps(this,'equipment','Bodyweight only')">Bodyweight only</div>
+        <div class="popt" onclick="ps(this,'equipment','Dumbbells + bench')">Dumbbells + bench</div>
+      </div>
+      <div style="padding:1.5rem;border-top:var(--border)">
+        <input class="pinput" id="pname" type="text" placeholder="Your name (optional)">
+        <input class="pinput" id="pemail" type="email" placeholder="Email address (optional)" style="margin-top:.8rem">
+        <button class="pgenbtn" onclick="genPlan()">Generate my plan</button>
+      </div>
+    </div>
+    <div class="pright" id="pright">
+      <div id="pph" class="pplaceholder">Select your preferences on the left and click <em>Generate my plan</em> to receive a personalised training programme with exercises, sets, reps, rest periods and coaching notes.</div>
+      <div id="pload" style="display:none" class="lmsg"><p>Building your programme</p><div class="lbar"><div class="lfill"></div></div></div>
+      <div id="pout" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NUTRITION -->
+<div id="page-nutrition" class="page">
+  <div class="ph">
+    <h1>Daily Nutrition</h1>
+    <p>Enter your stats — get your daily targets and meal plan</p>
+  </div>
+  <div class="nlayout">
+    <!-- LEFT: inputs -->
+    <div class="nleft">
+      <div class="nst">Your goal</div>
+      <div class="pgrid">
+        <div class="popt" onclick="nsel(this,'ngoal','Cutting')">Cutting</div>
+        <div class="popt" onclick="nsel(this,'ngoal','Bulking')">Bulking</div>
+        <div class="popt" onclick="nsel(this,'ngoal','Maintaining')">Maintaining</div>
+        <div class="popt" onclick="nsel(this,'ngoal','Recomping')">Recomping</div>
+      </div>
+
+      <div class="nst">Activity level</div>
+      <div class="pgrid">
+        <div class="popt" onclick="nsel(this,'nactivity','Sedentary')">Sedentary</div>
+        <div class="popt" onclick="nsel(this,'nactivity','Lightly active')">Lightly active</div>
+        <div class="popt" onclick="nsel(this,'nactivity','Moderately active')">Moderately active</div>
+        <div class="popt" onclick="nsel(this,'nactivity','Very active')">Very active</div>
+      </div>
+
+      <div class="nst">Diet preference</div>
+      <div class="pgrid">
+        <div class="popt psel" onclick="nsel(this,'ndiet','No restrictions')">No restrictions</div>
+        <div class="popt" onclick="nsel(this,'ndiet','Plant-based')">Plant-based</div>
+        <div class="popt" onclick="nsel(this,'ndiet','High protein')">High protein</div>
+        <div class="popt" onclick="nsel(this,'ndiet','Low carb')">Low carb</div>
+      </div>
+
+      <div class="nst" style="margin-top:.5rem">Your stats</div>
+      <div class="npgrid">
+        <div class="npc"><div class="npl">Age</div><input class="npi" id="nage" type="number" placeholder="e.g. 28"></div>
+        <div class="npc"><div class="npl">Weight (kg)</div><input class="npi" id="nweight" type="number" placeholder="e.g. 75"></div>
+        <div class="npc"><div class="npl">Height (cm)</div><input class="npi" id="nheight" type="number" placeholder="e.g. 178"></div>
+        <div class="npc"><div class="npl">Sex</div>
+          <select class="npi" id="nsex" style="cursor:pointer">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="padding:1.5rem;border-top:var(--border);margin-top:1rem">
+        <button class="pgenbtn" onclick="calcNutrition()">Calculate my plan</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: output -->
+    <div class="pright" id="nright">
+      <div id="nph" style="padding:3rem 1.5rem;color:#bbb;font-size:.85rem;font-weight:300;line-height:1.75">
+        Enter your stats and select your goal on the left to receive your daily calorie and macro targets, plus a sample meal plan built around your numbers.
+      </div>
+      <div id="nload" style="display:none" class="lmsg"><p>Calculating your plan</p><div class="lbar"><div class="lfill"></div></div></div>
+      <div id="nout" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEES -->
+<div id="page-fees" class="page">
+  <div class="ph">
+    <h1>Fees &amp; Packages</h1>
+    <p>Equinox East London — Premium 1-to-1 personal training</p>
+  </div>
+  <div class="fgrid">
+    <div class="fcard">
+      <div class="fcl">Single session</div>
+      <div class="fcn">Pay As You Go</div>
+      <div class="fcp">£65</div>
+      <div class="fcs">Per session</div>
+      <div class="fcd">A single 60-minute personal training session at Equinox East London. Full programme, coaching and follow-up notes included.</div>
+    </div>
+    <div class="fcard feat">
+      <div class="fcl">Most popular</div>
+      <div class="fcn">Premium Package</div>
+      <div class="fcp">£500</div>
+      <div class="fcs">8 sessions — £62.50 each</div>
+      <div class="fcd">Block booking for committed clients. Bespoke programme, progress tracking and monthly review session. Best value for results.</div>
+    </div>
+    <div class="fcard">
+      <div class="fcl">Free — no commitment</div>
+      <div class="fcn">Health Check</div>
+      <div class="fcp">£0</div>
+      <div class="fcs">20-minute consultation</div>
+      <div class="fcd">A complimentary health and movement assessment. Discuss your goals and history before any financial commitment.</div>
+    </div>
+    <div class="fcard" style="border-right:none;grid-column:1/-1;border-bottom:none">
+      <div class="fcl">Specialism</div>
+      <div class="fcn">Older Adult Training</div>
+      <div class="fcp">£65</div>
+      <div class="fcs">Per session — same rate, specialist approach</div>
+      <div class="fcd">Dedicated programming for adults 50+. Strength preservation, mobility, balance and long-term health. GP referral clients welcome from September 2026.</div>
+    </div>
+  </div>
+  <div class="fnote">
+    <span>All sessions at Equinox East London &nbsp;·&nbsp; Block bookings recommended</span>
+    <a onclick="om()">Book a free health check →</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page">
+  <div id="dlogin">
+    <div class="dlwrap">
+      <h2>PT Portal</h2>
+      <p>Atlasfit — trainer access only</p>
+      <label class="dll">Username</label>
+      <input class="dli" id="duser" placeholder="atlasfit">
+      <label class="dll">Password</label>
+      <input class="dli" id="dpass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')dlogin()">
+      <button class="dlbtn" onclick="dlogin()">Enter</button>
+      <div class="lerr" id="lerr">Incorrect credentials.</div>
+    </div>
+  </div>
+  <div id="dportal" style="display:none">
+    <div class="dtop">
+      <div><h2 id="dgreet">Good morning, Ali</h2><span id="ddate"></span></div>
+      <button class="dlout" onclick="dlogout()">Log out</button>
+    </div>
+    <div class="dstats">
+      <div class="dstat"><div class="dsl">Active clients</div><div class="dsv">3</div><div class="dss">Josie · Marcus · Priya</div></div>
+      <div class="dstat"><div class="dsl">Sessions this week</div><div class="dsv">5</div><div class="dss">2 remaining today</div></div>
+      <div class="dstat"><div class="dsl">Revenue this month</div><div class="dsv">£975</div><div class="dss">15 sessions · on track</div></div>
+    </div>
+    <div class="dbody">
+      <div class="dpanel">
+        <div class="dpt">This week</div>
+        <div class="dday" id="dmon"><div class="ddn">Monday</div><div class="ddc">Josie Winfield — 9:00am · Back squat / push-up progression<br>Marcus Lee — 6:00pm · Full body hypertrophy</div></div>
+        <div class="dday" id="dtue"><div class="ddn">Tuesday</div><div class="ddc">Priya Sharma — 7:30am · HIIT circuit + mobility<br>Programming / admin</div></div>
+        <div class="dday" id="dwed"><div class="ddn">Wednesday</div><div class="ddc">Josie Winfield — 9:00am · Fartlek + PNF stretch<br>Marcus Lee — 5:30pm · Upper body pull</div></div>
+        <div class="dday" id="dthu"><div class="ddn">Thursday</div><div class="ddc">CPD study — older adult exercise module</div></div>
+        <div class="dday" id="dfri"><div class="ddn">Friday</div><div class="ddc">Priya Sharma — 8:00am · Lower body strength<br>Free consultations x2</div></div>
+        <div class="dday" id="dsat"><div class="ddn">Saturday</div><div class="ddc">Walk-in health checks · Equinox 10am–1pm</div></div>
+        <div class="dday" id="dsun"><div class="ddn">Sunday</div><div class="ddc">Rest</div></div>
+      </div>
+      <div class="dpanel">
+        <div class="dpt">Clients</div>
+        <div class="crow">Josie Winfield <span>Week 3 · Strength</span></div>
+        <div class="crow">Marcus Lee <span>Week 6 · Hypertrophy</span></div>
+        <div class="crow">Priya Sharma <span>Week 1 · Conditioning</span></div>
+        <div class="dpt" style="margin-top:1.5rem">Generate session plan</div>
+        <input class="ginput" id="gclient" placeholder="Client name">
+        <input class="ginput" id="gfocus" placeholder="Session focus">
+        <button class="gbtn" onclick="genSession()">Generate plan</button>
+        <div id="gload" style="display:none" class="lmsg"><p>Writing session plan</p><div class="lbar"><div class="lfill"></div></div></div>
+        <div class="gout" id="gout"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="moverlay" id="modal" onclick="if(event.target===this)cm()">
+  <div class="modal">
+    <button class="mclose" onclick="cm()">&#x2715;</button>
+    <div id="mform">
+      <h2>Book Your Free Health Check</h2>
+      <div class="msub">20 minutes · No commitment · Equinox East London</div>
+      <label>Full name</label><input type="text" id="mname" placeholder="Your name">
+      <label>Email address</label><input type="email" id="memail" placeholder="your@email.com">
+      <label>Phone number</label><input type="tel" id="mphone" placeholder="+44...">
+      <label>What are you hoping to achieve?</label>
+      <textarea id="mgoal" placeholder="A sentence or two about your goals..."></textarea>
+      <button class="msubmit" onclick="submitBooking()">Request Consultation</button>
+    </div>
+    <div class="msuccess" id="msuccess">
+      <p>Request Received</p>
+      <span>Atlasfit will be in touch within 24 hours.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+var A = {injuries:'None', equipment:'Full gym'};
+
+function sp(id) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='dashboard') hlToday();
+}
+
+function ps(el, k, v) {
+  var siblings = el.closest('.pgrid').querySelectorAll('.popt');
+  siblings.forEach(function(o){o.classList.remove('psel')});
+  el.classList.add('psel');
+  A[k] = v;
+}
+
+var PLANS = {
+  'Build strength': {
+    days:[
+      {name:'DAY 1 — LEGS AND POSTERIOR CHAIN', exercises:[
+        {exercise:'Back squat', sets:'4x', reps:'5', rest:'3 min', notes:'85% 1RM. Chest up, heels grounded, knees track toes.'},
+        {exercise:'Romanian deadlift', sets:'3x', reps:'8', rest:'90s', notes:'70% 1RM. Feel hamstring stretch at bottom.'},
+        {exercise:'Leg press', sets:'3x', reps:'10', rest:'90s', notes:'Feet shoulder-width. Full depth.'},
+        {exercise:'Leg curl', sets:'3x', reps:'12', rest:'60s', notes:'Controlled eccentric. Pause at top.'},
+        {exercise:'Calf raise', sets:'4x', reps:'15', rest:'60s', notes:'Full range. Pause at stretch.'}
+      ]},
+      {name:'DAY 2 — CHEST AND SHOULDERS', exercises:[
+        {exercise:'Barbell bench press', sets:'4x', reps:'5', rest:'3 min', notes:'85% 1RM. Bar to lower chest. Full lockout.'},
+        {exercise:'Incline DB press', sets:'3x', reps:'8', rest:'90s', notes:'70% 1RM. Elbows at 45 degrees.'},
+        {exercise:'Strict press', sets:'3x', reps:'6', rest:'2 min', notes:'No leg drive. Full lockout at top.'},
+        {exercise:'DB lateral raise', sets:'3x', reps:'12', rest:'60s', notes:'Controlled eccentric. No shrugging.'},
+        {exercise:'Cable fly', sets:'3x', reps:'12', rest:'60s', notes:'Cross hands at top. 1s squeeze.'}
+      ]},
+      {name:'DAY 3 — BACK AND BICEPS', exercises:[
+        {exercise:'Conventional deadlift', sets:'4x', reps:'4', rest:'3 min', notes:'Heavy. Brace hard, bar close to shins.'},
+        {exercise:'Weighted pull-up', sets:'3x', reps:'6', rest:'90s', notes:'Full range. Dead hang to chin over bar.'},
+        {exercise:'Seated cable row', sets:'3x', reps:'10', rest:'75s', notes:'Squeeze shoulder blades at end.'},
+        {exercise:'Lat pulldown', sets:'3x', reps:'10', rest:'75s', notes:'Pull to upper chest. Full extension at top.'},
+        {exercise:'Barbell curl', sets:'3x', reps:'10', rest:'60s', notes:'No swinging. Full range.'}
+      ]},
+      {name:'DAY 4 — LEGS QUAD FOCUS', exercises:[
+        {exercise:'Front squat', sets:'4x', reps:'6', rest:'2 min', notes:'Elbows high. Upright torso.'},
+        {exercise:'Hack squat', sets:'3x', reps:'10', rest:'90s', notes:'Feet forward on plate. Full depth.'},
+        {exercise:'Walking lunge', sets:'3x', reps:'12/leg', rest:'75s', notes:'Long stride. Back knee close to floor.'},
+        {exercise:'Leg extension', sets:'3x', reps:'15', rest:'60s', notes:'Pause at top. 1s isometric.'},
+        {exercise:'Lying leg curl', sets:'3x', reps:'12', rest:'60s', notes:'Eccentric 3 seconds.'}
+      ]},
+      {name:'DAY 5 — PUSH AND TRICEPS', exercises:[
+        {exercise:'Close grip bench press', sets:'4x', reps:'8', rest:'90s', notes:'Hands shoulder-width. Elbows tucked.'},
+        {exercise:'Overhead press', sets:'3x', reps:'8', rest:'90s', notes:'Core tight. No arch.'},
+        {exercise:'Tricep pushdown', sets:'3x', reps:'12', rest:'60s', notes:'Drop set on final set. -20% load.'},
+        {exercise:'Skull crusher', sets:'3x', reps:'12', rest:'60s', notes:'Bar to forehead. Slow eccentric.'},
+        {exercise:'Dips', sets:'3x', reps:'max', rest:'75s', notes:'Full range. Lean forward for chest focus.'}
+      ]},
+      {name:'DAY 6 — PULL AND BICEPS', exercises:[
+        {exercise:'Barbell row', sets:'4x', reps:'8', rest:'90s', notes:'Hinge to 45 degrees. Row to hip.'},
+        {exercise:'Single arm DB row', sets:'3x', reps:'10/side', rest:'75s', notes:'Flat back. Full range of motion.'},
+        {exercise:'Face pull', sets:'3x', reps:'15', rest:'60s', notes:'External rotation at end. Rear delts.'},
+        {exercise:'Hammer curl', sets:'3x', reps:'12', rest:'60s', notes:'Neutral grip. No swinging.'},
+        {exercise:'Incline DB curl', sets:'3x', reps:'12', rest:'60s', notes:'Full stretch at bottom. Slow eccentric.'}
+      ]}
+    ],
+    note:'6-day strength programme built on progressive overload. Add 2.5kg upper body and 5kg lower body each week you complete all reps. Book a session to get your exact 1RMs tested.'
+  },
+  'Build muscle': {
+    days:[
+      {name:'DAY 1 — CHEST AND TRICEPS', exercises:[
+        {exercise:'Incline DB bench press', sets:'4x', reps:'10', rest:'90s', notes:'70% 1RM. Full stretch at bottom.'},
+        {exercise:'Flat barbell press', sets:'4x', reps:'10', rest:'90s', notes:'Bar to lower chest. Squeeze at top.'},
+        {exercise:'Cable fly', sets:'3x', reps:'12', rest:'75s', notes:'Cross hands. 1s peak contraction.'},
+        {exercise:'Tricep pushdown', sets:'3x', reps:'12', rest:'60s', notes:'Elbows tucked. Full extension.'},
+        {exercise:'Skull crusher', sets:'3x', reps:'12', rest:'60s', notes:'Slow eccentric 3 seconds.'}
+      ]},
+      {name:'DAY 2 — BACK AND BICEPS', exercises:[
+        {exercise:'Lat pulldown', sets:'4x', reps:'10', rest:'90s', notes:'Pull to upper chest. Long neck.'},
+        {exercise:'Seated cable row', sets:'4x', reps:'10', rest:'90s', notes:'Squeeze shoulder blades at end.'},
+        {exercise:'Single arm DB row', sets:'3x', reps:'10/side', rest:'75s', notes:'Flat back. Row to hip.'},
+        {exercise:'Barbell curl', sets:'3x', reps:'12', rest:'60s', notes:'Supinated grip. No swinging.'},
+        {exercise:'Incline DB curl', sets:'3x', reps:'12', rest:'60s', notes:'Full stretch. Slow eccentric.'}
+      ]},
+      {name:'DAY 3 — LEGS', exercises:[
+        {exercise:'Back squat', sets:'4x', reps:'10', rest:'90s', notes:'70% 1RM. Chest up, full depth.'},
+        {exercise:'Romanian deadlift', sets:'4x', reps:'10', rest:'90s', notes:'Hinge at hips. Hamstring stretch at bottom.'},
+        {exercise:'Leg press', sets:'3x', reps:'12', rest:'75s', notes:'Feet shoulder-width. Do not lock knees.'},
+        {exercise:'Leg curl', sets:'3x', reps:'12', rest:'60s', notes:'Controlled. Pause at top.'},
+        {exercise:'Leg extension drop set', sets:'3x', reps:'10 + fail', rest:'90s', notes:'Drop 20% immediately. Burn it out.'}
+      ]},
+      {name:'DAY 4 — SHOULDERS', exercises:[
+        {exercise:'DB shoulder press', sets:'4x', reps:'10', rest:'90s', notes:'Neutral grip. Core tight.'},
+        {exercise:'Lateral raise', sets:'4x', reps:'12', rest:'75s', notes:'Raise to shoulder height only.'},
+        {exercise:'Lateral raise drop set', sets:'3x', reps:'10 + fail', rest:'90s', notes:'Drop 20%. Finish each set to failure.'},
+        {exercise:'Reverse cable fly', sets:'3x', reps:'15', rest:'60s', notes:'Rear delts. Arms slightly bent.'},
+        {exercise:'Front raise', sets:'3x', reps:'12', rest:'60s', notes:'Alternate arms. No momentum.'}
+      ]},
+      {name:'DAY 5 — LEGS POSTERIOR', exercises:[
+        {exercise:'Deadlift', sets:'4x', reps:'8', rest:'2 min', notes:'75% 1RM. Perfect form. Brace hard.'},
+        {exercise:'Hip thrust', sets:'4x', reps:'12', rest:'90s', notes:'Drive through heels. Squeeze glutes at top.'},
+        {exercise:'Lying leg curl', sets:'4x', reps:'12', rest:'75s', notes:'Eccentric 3 seconds each rep.'},
+        {exercise:'Adductor machine', sets:'3x', reps:'15', rest:'60s', notes:'Full range. Control the return.'},
+        {exercise:'Pelvic elevation', sets:'4x', reps:'12', rest:'60s', notes:'Isometric hold at top of each rep.'}
+      ]},
+      {name:'DAY 6 — ARMS AND ABS', exercises:[
+        {exercise:'Close grip bench press', sets:'3x', reps:'12', rest:'75s', notes:'Elbows tucked. Tricep focus.'},
+        {exercise:'Tricep dip', sets:'3x', reps:'max', rest:'75s', notes:'Full range. Controlled descent.'},
+        {exercise:'Barbell curl', sets:'3x', reps:'12', rest:'60s', notes:'Strict form. No swinging.'},
+        {exercise:'Hammer curl', sets:'3x', reps:'12', rest:'60s', notes:'Neutral grip. Squeeze at top.'},
+        {exercise:'Cable crunch', sets:'3x', reps:'15', rest:'60s', notes:'Round the spine. Do not pull with arms.'}
+      ]}
+    ],
+    note:'6-day hypertrophy programme. Track every set and aim to add 1 rep or 2.5kg each week. Volume and progressive overload build muscle — consistency is everything.'
+  },
+  'Lose body fat': {
+    days:[
+      {name:'DAY 1 — FULL BODY CIRCUIT A', exercises:[
+        {exercise:'Goblet squat', sets:'4x', reps:'15', rest:'45s', notes:'KB at chest. Upright torso.'},
+        {exercise:'DB Romanian deadlift', sets:'4x', reps:'12', rest:'45s', notes:'Hinge at hips. Feel hamstrings.'},
+        {exercise:'Push-up', sets:'4x', reps:'max', rest:'45s', notes:'Full range. Scale to knees if needed.'},
+        {exercise:'DB bent-over row', sets:'4x', reps:'12/side', rest:'45s', notes:'Flat back. Row to hip.'},
+        {exercise:'Kettlebell swing', sets:'4x', reps:'20', rest:'30s', notes:'Hip drive not arms. Explosive.'}
+      ]},
+      {name:'DAY 2 — CARDIO AND CORE', exercises:[
+        {exercise:'Rowing machine intervals', sets:'8x', reps:'1 min on / 1 min off', rest:'—', notes:'On: RPE 8-9. Off: RPE 4.'},
+        {exercise:'Plank hold', sets:'3x', reps:'60s', rest:'30s', notes:'Neutral spine. Squeeze everything.'},
+        {exercise:'Dead bug', sets:'3x', reps:'10/side', rest:'45s', notes:'Lower back pressed to floor throughout.'},
+        {exercise:'Russian twist', sets:'3x', reps:'20', rest:'45s', notes:'Feet off floor. Controlled rotation.'},
+        {exercise:'Ab wheel rollout', sets:'3x', reps:'10', rest:'60s', notes:'Slow out and in. Do not let hips drop.'}
+      ]},
+      {name:'DAY 3 — LOWER BODY CIRCUIT', exercises:[
+        {exercise:'Barbell back squat', sets:'4x', reps:'12', rest:'60s', notes:'65% 1RM. Moderate load, high effort.'},
+        {exercise:'Walking lunge', sets:'3x', reps:'12/leg', rest:'45s', notes:'Long stride. Knee close to floor.'},
+        {exercise:'Hip thrust', sets:'3x', reps:'15', rest:'60s', notes:'Drive through heels. Squeeze at top.'},
+        {exercise:'Leg press', sets:'3x', reps:'15', rest:'60s', notes:'High foot position. Glute focus.'},
+        {exercise:'Lateral band walk', sets:'3x', reps:'20/side', rest:'45s', notes:'Tension throughout. Stay low.'}
+      ]},
+      {name:'DAY 4 — UPPER BODY CIRCUIT', exercises:[
+        {exercise:'Lat pulldown', sets:'4x', reps:'12', rest:'60s', notes:'Full range. Pull to upper chest.'},
+        {exercise:'DB shoulder press', sets:'4x', reps:'12', rest:'60s', notes:'Controlled. No arching.'},
+        {exercise:'Cable row', sets:'3x', reps:'12', rest:'45s', notes:'Squeeze at end. Controlled return.'},
+        {exercise:'Push-up to row', sets:'3x', reps:'10', rest:'60s', notes:'DB push-up then row each side.'},
+        {exercise:'Battle ropes', sets:'5x', reps:'30s', rest:'30s', notes:'Alternate waves. Max effort.'}
+      ]},
+      {name:'DAY 5 — HIIT AND CONDITIONING', exercises:[
+        {exercise:'Burpee', sets:'5x', reps:'10', rest:'30s', notes:'Full extension at top. Move fast.'},
+        {exercise:'Box jump', sets:'5x', reps:'8', rest:'45s', notes:'Land soft. Step down. Reset.'},
+        {exercise:'Slam ball', sets:'5x', reps:'15', rest:'30s', notes:'Full overhead extension. Slam hard.'},
+        {exercise:'Treadmill sprint', sets:'6x', reps:'20s on / 40s off', rest:'—', notes:'Sprint at 90% max effort.'},
+        {exercise:'Ski erg', sets:'4x', reps:'30s on / 30s off', rest:'—', notes:'Full pull. Hinge and drive.'}
+      ]},
+      {name:'DAY 6 — FULL BODY CIRCUIT B', exercises:[
+        {exercise:'Deadlift', sets:'4x', reps:'10', rest:'75s', notes:'65% 1RM. Hinge pattern. Brace hard.'},
+        {exercise:'DB chest press', sets:'3x', reps:'12', rest:'60s', notes:'Neutral grip. Full stretch at bottom.'},
+        {exercise:'Face pull', sets:'3x', reps:'15', rest:'45s', notes:'External rotation. Rear delts.'},
+        {exercise:'Farmer carry', sets:'4x', reps:'40m', rest:'60s', notes:'Heavy. Tall posture. No waddling.'},
+        {exercise:'KB goblet squat to press', sets:'3x', reps:'12', rest:'60s', notes:'Squat deep then press at top.'}
+      ]}
+    ],
+    note:'6-day fat loss programme combining resistance and conditioning. Fat loss is built in the kitchen and accelerated here. We will discuss your nutrition targets at your free health check.'
+  }
+};
+
+PLANS['Improve fitness'] = PLANS['Lose body fat'];
+PLANS['General health'] = PLANS['Lose body fat'];
+PLANS['Improve mobility'] = PLANS['Build strength'];
+
+function buildPlanHTML(plan, name) {
+  var html = '<div class="pnrow"><h2>' + name + 's Programme</h2><div class="ptag">Generated by Atlasfit — Equinox East London</div></div>';
+  html += '<div class="pmeta">';
+  html += '<div class="pmc"><div class="pmcl">Goal</div><div class="pmcv">' + (plan.goal||'—') + '</div></div>';
+  html += '<div class="pmc"><div class="pmcl">Level</div><div class="pmcv">' + (plan.level||'—') + '</div></div>';
+  html += '<div class="pmc"><div class="pmcl">Days/week</div><div class="pmcv">' + (plan.daysPerWeek||'6 days') + '</div></div>';
+  html += '<div class="pmc"><div class="pmcl">Session</div><div class="pmcv">' + (plan.duration||'60 min') + '</div></div>';
+  html += '</div>';
+  plan.days.forEach(function(day) {
+    html += '<div class="psectitle">' + day.name + '</div>';
+    html += '<div class="pcolheads"><div class="pch">Exercise</div><div class="pch">Sets</div><div class="pch">Reps</div><div class="pch">Rest</div><div class="pch">Notes</div></div>';
+    day.exercises.forEach(function(ex) {
+      html += '<div class="prow"><div class="pc">' + ex.exercise + '</div><div class="pc">' + ex.sets + '</div><div class="pc">' + ex.reps + '</div><div class="pc">' + ex.rest + '</div><div class="pc pcnote">' + ex.notes + '</div></div>';
+    });
+  });
+  if(plan.note) html += '<div class="pnote"><strong>A note from Atlasfit</strong>' + plan.note + '</div>';
+  html += '<a class="pcta" onclick="om()">Book your free health check</a>';
+  return html;
+}
+
+function genPlan() {
+  var name = document.getElementById('pname').value || 'Your';
+  document.getElementById('pph').style.display = 'none';
+  document.getElementById('pout').style.display = 'none';
+  document.getElementById('pload').style.display = 'block';
+  document.getElementById('pright').scrollTop = 0;
+  setTimeout(function() {
+    document.getElementById('pload').style.display = 'none';
+    var goal = A.goal || 'Build strength';
+    var plan = PLANS[goal] || PLANS['Build strength'];
+    var fullPlan = {
+      goal: goal,
+      level: A.level || 'Not specified',
+      daysPerWeek: A.days || '6 days',
+      duration: A.duration || '60 min',
+      days: plan.days,
+      note: plan.note
+    };
+    var out = document.getElementById('pout');
+    out.style.display = 'block';
+    out.innerHTML = buildPlanHTML(fullPlan, name);
+  }, 1800);
+}
+
+var ND = {ndiet:'No restrictions'};
+
+function nsel(el, k, v) {
+  var siblings = el.closest('.pgrid').querySelectorAll('.popt');
+  siblings.forEach(function(o){o.classList.remove('psel')});
+  el.classList.add('psel');
+  ND[k] = v;
+}
+
+function calcNutrition() {
+  document.getElementById('nph').style.display = 'none';
+  document.getElementById('nout').style.display = 'none';
+  document.getElementById('nload').style.display = 'block';
+  document.getElementById('nright').scrollTop = 0;
+
+  var age = parseInt(document.getElementById('nage').value) || 25;
+  var weight = parseFloat(document.getElementById('nweight').value) || 75;
+  var height = parseFloat(document.getElementById('nheight').value) || 175;
+  var sex = document.getElementById('nsex').value;
+  var goal = ND.ngoal || 'Maintaining';
+  var activity = ND.nactivity || 'Moderately active';
+  var diet = ND.ndiet || 'No restrictions';
+
+  setTimeout(function() {
+    document.getElementById('nload').style.display = 'none';
+    var out = document.getElementById('nout');
+    out.style.display = 'block';
+    out.innerHTML = buildNutritionPlan(age, weight, height, sex, goal, activity, diet);
+  }, 1500);
+}
+
+function buildNutritionPlan(age, weight, height, sex, goal, activity, diet) {
+  // BMR (Mifflin-St Jeor)
+  var bmr = sex === 'male'
+    ? (10 * weight) + (6.25 * height) - (5 * age) + 5
+    : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+
+  var activityMult = {
+    'Sedentary': 1.2,
+    'Lightly active': 1.375,
+    'Moderately active': 1.55,
+    'Very active': 1.725
+  }[activity] || 1.55;
+
+  var tdee = Math.round(bmr * activityMult);
+
+  var calories = goal === 'Cutting' ? tdee - 400
+    : goal === 'Bulking' ? tdee + 400
+    : tdee;
+
+  // Macros
+  var protein = Math.round(weight * 2.0);
+  var fat = Math.round(calories * 0.25 / 9);
+  var carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
+  var protPerMeal = Math.round(protein / 4);
+
+  // Meals based on diet preference
+  var meals = getMeals(diet, protPerMeal, goal, carbs, fat);
+
+  var html = '';
+
+  // Header stats grid
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:var(--border)">';
+  html += '<div class="pmc"><div class="pmcl">Daily calories</div><div class="pmcv" style="font-size:1.5rem">' + calories + '</div></div>';
+  html += '<div class="pmc"><div class="pmcl">Protein</div><div class="pmcv" style="color:var(--green)">' + protein + 'g</div></div>';
+  html += '<div class="pmc"><div class="pmcl">Carbs</div><div class="pmcv">' + carbs + 'g</div></div>';
+  html += '<div class="pmc" style="border-right:none"><div class="pmcl">Fat</div><div class="pmcv">' + fat + 'g</div></div>';
+  html += '</div>';
+
+  // Goal tag
+  html += '<div style="padding:.8rem 1.5rem;border-bottom:var(--border);font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gray)">';
+  html += goal.toUpperCase() + ' &nbsp;·&nbsp; ' + activity.toUpperCase() + ' &nbsp;·&nbsp; ' + diet.toUpperCase();
+  html += '</div>';
+
+  // Meal cards grid
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr">';
+  meals.forEach(function(meal, i) {
+    var borderRight = i % 2 === 0 ? 'border-right:var(--border);' : '';
+    var borderBottom = i < meals.length - 2 ? 'border-bottom:var(--border);' : '';
+    html += '<div style="' + borderRight + borderBottom + 'padding:1.5rem">';
+    html += '<div style="font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);margin-bottom:.5rem">' + meal.time + '</div>';
+    html += '<div style="font-family:var(--fd);font-size:1.3rem;letter-spacing:.05em;margin-bottom:.3rem">' + meal.name + '</div>';
+    html += '<div style="font-size:.75rem;font-weight:300;color:#555;margin-bottom:1rem;line-height:1.5">' + meal.description + '</div>';
+    html += '<div style="display:flex;gap:.5rem;flex-wrap:wrap">';
+    html += '<span style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;background:var(--green);color:white;padding:.2rem .6rem">' + meal.protein + 'g protein</span>';
+    html += '<span style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;border:var(--border);padding:.2rem .6rem">' + meal.kcal + ' kcal</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Note
+  html += '<div style="padding:1.5rem;border-top:var(--border);font-size:.82rem;font-weight:300;line-height:1.65;color:#333">';
+  html += '<strong style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;display:block;margin-bottom:.4rem">A note from Atlasfit</strong>';
+  html += 'This plan gives you ' + calories + ' kcal per day with ' + protein + 'g protein spread across 4 meals — roughly ' + protPerMeal + 'g per meal. ';
+  html += goal === 'Cutting' ? 'The 400 kcal deficit is designed to lose approximately 0.4kg per week while preserving muscle mass. Do not go below this — aggressive cuts destroy strength gains.' :
+          goal === 'Bulking' ? 'The 400 kcal surplus supports lean muscle gain without excessive fat accumulation. Expect roughly 0.3–0.5kg per week. Track progress monthly.' :
+          'Maintenance calories keep your weight stable while supporting your training performance and recovery.';
+  html += '</div>';
+
+  html += '<a class="pcta" onclick="om()">Book your free health check</a>';
+  return html;
+}
+
+function getMeals(diet, protPerMeal, goal, carbs, fat) {
+  var isPlant = diet === 'Plant-based';
+  var isLowCarb = diet === 'Low carb';
+  var isBulk = goal === 'Bulking';
+
+  if(isPlant) {
+    return [
+      {time:'Breakfast', name:'Protein Oats', description:'50g oats, 200ml oat milk, 1 scoop pea protein, 1 tbsp almond butter, blueberries', protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 120)},
+      {time:'Lunch', name:'Tofu Rice Bowl', description:'150g firm tofu, 80g brown rice, edamame, roasted broccoli, soy-sesame dressing', protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 100)},
+      {time:'Dinner', name:'Lentil and Chickpea Curry', description:'200g red lentils, 100g chickpeas, spinach, brown rice, coconut milk', protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 130)},
+      {time:'Shake / Snack', name:'Pea Protein Shake', description:'2 scoops pea protein, 300ml oat milk, 1 banana' + (isBulk ? ', 1 tbsp peanut butter' : ''), protein: protPerMeal, kcal: Math.round(protPerMeal * 6 + 80)}
+    ];
+  }
+  if(isLowCarb) {
+    return [
+      {time:'Breakfast', name:'Egg and Avocado', description:'4 eggs scrambled, half avocado, 2 strips bacon, spinach', protein: protPerMeal, kcal: Math.round(protPerMeal * 7 + 100)},
+      {time:'Lunch', name:'Chicken Salad', description:'200g grilled chicken breast, mixed leaves, cucumber, olive oil, feta', protein: protPerMeal, kcal: Math.round(protPerMeal * 7 + 80)},
+      {time:'Dinner', name:'Salmon and Greens', description:'200g salmon fillet, asparagus, tenderstem broccoli, butter, lemon', protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 120)},
+      {time:'Shake / Snack', name:'Whey Protein Shake', description:'2 scoops whey, 300ml whole milk, 30g almonds', protein: protPerMeal, kcal: Math.round(protPerMeal * 6 + 90)}
+    ];
+  }
+  return [
+    {time:'Breakfast', name:'Protein Pancakes', description:'3 eggs, 1 scoop whey, 40g oats, banana, Greek yoghurt, honey' + (isBulk ? ', peanut butter' : ''), protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 100)},
+    {time:'Lunch', name:'Chicken and Rice', description:'200g grilled chicken breast, 100g basmati rice, roasted veg, olive oil, seasoning', protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 120)},
+    {time:'Dinner', name:'Steak and Potatoes', description:'200g sirloin steak, 150g sweet potato, green beans, butter' + (isBulk ? ', extra potato' : ''), protein: protPerMeal, kcal: Math.round(protPerMeal * 8 + 140)},
+    {time:'Shake / Snack', name:'Whey Protein Shake', description:'2 scoops whey, 300ml whole milk, 1 banana' + (isBulk ? ', 1 tbsp peanut butter' : ''), protein: protPerMeal, kcal: Math.round(protPerMeal * 6 + 80)}
+  ];
+}
+
+function dlogin() {
+  if(document.getElementById('duser').value === 'atlasfit' && document.getElementById('dpass').value === 'equinox2026') {
+    document.getElementById('dlogin').style.display = 'none';
+    document.getElementById('dportal').style.display = 'block';
+    var now = new Date();
+    var h = now.getHours();
+    var greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('dgreet').textContent = greet + ', Ali';
+    document.getElementById('ddate').textContent = now.toLocaleDateString('en-GB', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    hlToday();
+  } else {
+    document.getElementById('lerr').style.display = 'block';
+  }
+}
+
+function dlogout() {
+  document.getElementById('dlogin').style.display = 'block';
+  document.getElementById('dportal').style.display = 'none';
+  document.getElementById('duser').value = '';
+  document.getElementById('dpass').value = '';
+}
+
+function hlToday() {
+  var days = ['dsun','dmon','dtue','dwed','dthu','dfri','dsat'];
+  var today = days[new Date().getDay()];
+  document.querySelectorAll('.dday').forEach(function(e){e.classList.remove('today')});
+  var el = document.getElementById(today);
+  if(el) el.classList.add('today');
+}
+
+function genSession() {
+  var client = document.getElementById('gclient').value || 'client';
+  var focus = document.getElementById('gfocus').value || 'full body';
+  document.getElementById('gload').style.display = 'block';
+  document.getElementById('gout').style.display = 'none';
+  setTimeout(function() {
+    document.getElementById('gload').style.display = 'none';
+    var out = document.getElementById('gout');
+    out.style.display = 'block';
+    out.innerHTML = '<strong>' + client + ' — ' + focus + '</strong><br><br>WARM UP (10 min)<br>5 min bike erg, easy pace<br>Hip mobility sequence x5/side<br>Banded activation work<br><br>MAIN SESSION<br>A1: Primary compound — 4x5 @ 80-85% 1RM, 3 min rest<br>B1: Secondary compound — 3x8 @ 70-75% 1RM, 90s rest<br>C1/C2: Accessory superset — 3x10-12, 60s rest between supersets<br>D1: Isolation finisher — 3x12-15, 60s rest<br><br>COOL DOWN<br>Static stretching — target muscles worked today<br>2-3 key stretches, 45-60s each<br><br>Notes: Update weights in TrueCoach after session.';
+  }, 1200);
+}
+
+function om() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('mform').style.display = 'block';
+  document.getElementById('msuccess').style.display = 'none';
+}
+function cm() { document.getElementById('modal').classList.remove('open'); }
+function submitBooking() {
+  if(!document.getElementById('mname').value || !document.getElementById('memail').value) {
+    alert('Please enter your name and email.');
+    return;
+  }
+  document.getElementById('mform').style.display = 'none';
+  document.getElementById('msuccess').style.display = 'block';
+}
+</script>
+</body>
+</html>
